@@ -5,7 +5,7 @@ var bodyParser = require('body-parser');
 
 // Added as part of our solution
 var knex = require('knex');
-var expressSession = require('express-session');
+var session = require('express-session');
 var cookieParser = require('cookie-parser');
 
 
@@ -17,6 +17,11 @@ var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
 var app = express();
+app.use(session({secret: 'whatever', 
+  proxy: true,
+  resave: true,
+  saveUninitialized: true}));
+var sess;
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -30,8 +35,15 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', 
   function(req, res) {
-    res.redirect('login');
-    res.end();
+    // if session exist then render home page
+    if (req.session.username) {
+      res.render('index');
+    }
+    else {
+      // else, go to login
+      res.redirect('login');
+      res.end();
+    }
   });
 
 app.get('/login', function(req, res){
@@ -61,37 +73,29 @@ app.get('/links',
 app.post('/signup', function(req, res) {
 
   // ****** Future: add verification of non-blank username and password
-  var username = req.body.username;
-  var password = req.body.password;
-  var user = new User({'password': password, 'username': username})
+  var un = req.body.username;
+  var pw = req.body.password;
+  var user = new User({'password': pw, 'username': un})
 
   app.use(bodyParser.urlencoded({
     extended: true
   }));
   app.use(bodyParser.json());
   app.use(cookieParser('whatever'));
-  app.use(expressSession({secret : 'whatever',
-    resave: true,
-    saveUninitialized: true}));
+  // app.use(expressSession({secret : 'whatever',
+  //   resave: true,
+  //   saveUninitialized: true}));
 
-  user.save().then(function(newUser) {
-    Users.add(newUser);
-    // res.writeHead(200, {'Content-Type':'text/plain'});
-    // var sess = req.session;
-    // console.log('**************************', req.session);
-    // req.session.username = req.body.username;
-    // req.session.password = req.body.password;
-    // console.log('((((((((()((((((', req.session.username, req.session.password);
-
-    // res.send(200, newUser);
-    // res.end();
+user.save().then(function(newUser) {
+  Users.add(newUser);
+  sess = req.session;
+  sess.username = un;
+  sess.password = pw;
+    // console.log('sess', sess.username);
   });
+res.redirect('/');
 
-  res.redirect('/');
   // store the username and the password in a session
-
-
-
 });
 
 app.post('/links', 
@@ -140,14 +144,25 @@ app.post('/login', function(req, res){
   // else, redirect to '/login'
   var un = req.body.username;
   var pw = req.body.password;
+  console.log('un & pw', un , pw);
 
   new User({username: un, password: pw}).fetch().then(function(found){
-    if(found)
+    if(found){
+      // then start the session
+      sess = req.session;
+      sess.username = un;
+      sess.password = pw; // do we need this?
+      // console.log('session', sess.username, sess.password );
       res.redirect('/');
+    }
     else{
       res.redirect('/login');
     }
   });
+
+});
+
+app.get('/signup', function(req, res){
 
 });
 
