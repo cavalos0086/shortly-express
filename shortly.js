@@ -38,6 +38,7 @@ app.get('/',
     // if session exist then render home page
     if (req.session.username) {
       res.render('index');
+      res.send(200);
     }
     else {
       // else, go to login
@@ -60,15 +61,17 @@ app.get('/create',
 
 app.get('/links', 
   function(req, res) {
-  // if (logged in)
-    // Links.reset().fetch().then(function(links) {
-    //   res.send(200, links.models);
-    // });
+  // if session exist then render home page
+  if (req.session.username) {
+    res.render('index');
+  }
+  else {
+      // else, go to login
+      res.redirect('login');
+      res.end();
+    }
 
-  //else 
-  res.redirect('login');
-  res.end();
-});
+  });
 
 app.post('/signup', function(req, res) {
 
@@ -91,9 +94,9 @@ user.save().then(function(newUser) {
   sess = req.session;
   sess.username = un;
   sess.password = pw;
-    // console.log('sess', sess.username);
-  });
+});
 res.redirect('/');
+res.end();
 
   // store the username and the password in a session
 });
@@ -144,7 +147,6 @@ app.post('/login', function(req, res){
   // else, redirect to '/login'
   var un = req.body.username;
   var pw = req.body.password;
-  console.log('un & pw', un , pw);
 
   new User({username: un, password: pw}).fetch().then(function(found){
     if(found){
@@ -152,7 +154,6 @@ app.post('/login', function(req, res){
       sess = req.session;
       sess.username = un;
       sess.password = pw; // do we need this?
-      // console.log('session', sess.username, sess.password );
       res.redirect('/');
     }
     else{

@@ -22,7 +22,7 @@ var Link = require('../app/models/link');
 // rows of asterisks below. If you do, you will be overwriting
 // the actual beforeEach, which we want to work!
 /************************************************************/
-var xbeforeEach = function(){};
+var beforeEach = function(){};
 /************************************************************/
 
 
@@ -68,7 +68,7 @@ describe('', function() {
       });
   });
 
-  xdescribe('Link creation:', function(){
+  describe('Link creation:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 
@@ -93,7 +93,7 @@ describe('', function() {
       });
     });
 
-    xit('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
+    it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/links',
@@ -109,7 +109,7 @@ describe('', function() {
       });
     });
 
-    xdescribe('Shortening links:', function(){
+    describe('Shortening links:', function(){
 
       var options = {
         'method': 'POST',
@@ -158,7 +158,7 @@ describe('', function() {
 
     }); // 'Shortening links'
 
-    xdescribe('With previously saved urls:', function(){
+    describe('With previously saved urls:', function(){
 
       var link;
 
@@ -184,6 +184,7 @@ describe('', function() {
           }
         };
 
+        console.log('*((((((((', link);
         requestWithSession(options, function(error, res, body) {
           var code = res.body.code;
           expect(code).to.equal(link.get('code'));
