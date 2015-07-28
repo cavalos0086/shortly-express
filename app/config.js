@@ -47,8 +47,6 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
 /************************************************************/
 
 db.knex.schema.hasTable('users').then(function(exists){
-  console.log('create user', '\n\n');
-  console.log('exists', exists);
   if (!exists) {
     db.knex.schema.createTable('users', function (user) {
       user.increments('id').primary();

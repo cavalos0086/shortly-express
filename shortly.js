@@ -2,7 +2,11 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+
+// Added as part of our solution
 var knex = require('knex');
+var expressSession = require('express-session');
+var cookieParser = require('cookie-parser');
 
 
 var db = require('./app/config');
@@ -33,6 +37,7 @@ app.get('/',
 app.get('/login', function(req, res){
   res.render('login');
   res.end();
+
 });
 
 app.get('/create', 
@@ -55,20 +60,38 @@ app.get('/links',
 
 app.post('/signup', function(req, res) {
 
-  // db.knex.insert({username: req.body.username, hashPassword: req.body.password}).into('users');
+  // ****** Future: add verification of non-blank username and password
   var username = req.body.username;
   var password = req.body.password;
-  console.log('username', username, 'password', password);
   var user = new User({'password': password, 'username': username})
+
+  app.use(bodyParser.urlencoded({
+    extended: true
+  }));
+  app.use(bodyParser.json());
+  app.use(cookieParser('whatever'));
+  app.use(expressSession({secret : 'whatever',
+    resave: true,
+    saveUninitialized: true}));
 
   user.save().then(function(newUser) {
     Users.add(newUser);
-    res.redirect('/');
-    res.writeHead(200, {'Content-Type':'text/plain'});
-    res.send(200, newUser);
+    // res.writeHead(200, {'Content-Type':'text/plain'});
+    // var sess = req.session;
+    // console.log('**************************', req.session);
+    // req.session.username = req.body.username;
+    // req.session.password = req.body.password;
+    // console.log('((((((((()((((((', req.session.username, req.session.password);
+
+    // res.send(200, newUser);
+    // res.end();
   });
 
-  res.end();
+  res.redirect('/');
+  // store the username and the password in a session
+
+
+
 });
 
 app.post('/links', 
@@ -110,6 +133,23 @@ app.post('/links',
 // e.g. login, logout, etc.
 /************************************************************/
 
+app.post('/login', function(req, res){
+  // check if req.username is in db
+  // check if req.pass is in db
+  // if so, then redirect to '/'
+  // else, redirect to '/login'
+  var un = req.body.username;
+  var pw = req.body.password;
+
+  new User({username: un, password: pw}).fetch().then(function(found){
+    if(found)
+      res.redirect('/');
+    else{
+      res.redirect('/login');
+    }
+  });
+
+});
 
 
 /************************************************************/
