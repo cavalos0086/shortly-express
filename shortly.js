@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var knex = require('knex');
 
 
 var db = require('./app/config');
@@ -49,11 +50,25 @@ app.get('/links',
 
   //else 
   res.redirect('login');
-    res.end();
+  res.end();
 });
 
-app.post('/signup', function(res, req) {
-  
+app.post('/signup', function(req, res) {
+
+  // db.knex.insert({username: req.body.username, hashPassword: req.body.password}).into('users');
+  var username = req.body.username;
+  var password = req.body.password;
+  console.log('username', username, 'password', password);
+  var user = new User({'password': password, 'username': username})
+
+  user.save().then(function(newUser) {
+    Users.add(newUser);
+    res.redirect('/');
+    res.writeHead(200, {'Content-Type':'text/plain'});
+    res.send(200, newUser);
+  });
+
+  res.end();
 });
 
 app.post('/links', 
